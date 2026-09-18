@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="A small, growing library of visual book summaries. Explore ideas worth keeping, starting with David Brooks's How to Know a Person.">
+  <title>The Reading Room | A Library of Book Summaries</title>
+  <style>
+    :root {
+      --paper: #f5f1e9; --white: #fffdf8; --ink: #172f2a;
+      --green: #27634f; --muted: #63716a; --line: #d5d8cc;
+      --coral: #d88869; --rust: #a3472d; --lime: #d6e7b8;
+      --sand: #e9e2d4; --sage: #aeb9a1; --shadow: #172f2a26;
+      --serif: Georgia, 'Times New Roman', serif; --sans: system-ui, sans-serif;
+      --display: clamp(3.5rem, 6.5vw, 6rem); --heading: clamp(2rem, 3vw, 2.75rem);
+      --title: clamp(1.75rem, 2.6vw, 2.25rem); --lead: 1.125rem;
+      --body: 1rem; --small: .875rem; --label: .6875rem;
+      --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px;
+      --s6: 24px; --s8: 32px; --s10: 40px; --s12: 48px;
+      --s16: 64px; --s20: 80px; --radius: 4px;
+      --ease: cubic-bezier(.16,1,.3,1); --quick: 220ms; --entrance: 700ms;
+      --book-shadow: 8px 12px 20px var(--shadow);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: var(--s6); }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: var(--body)/1.7 var(--sans); -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-underline-offset: .25em; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    a, button, input { -webkit-tap-highlight-color: transparent; }
+    :focus-visible { outline: 3px solid var(--rust); outline-offset: 5px; }
+    ::selection { background: var(--lime); color: var(--ink); }
+    [hidden], .book-card[hidden] { display: none; }
+    h1, h2, h3, p { margin: 0; }
+    h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -.045em; line-height: 1.12; }
+    svg { display: block; max-width: 100%; }
+    .container { width: min(1160px, calc(100% - clamp(48px, 9vw, 128px))); margin-inline: auto; }
+    .skip { position: absolute; top: var(--s3); left: var(--s4); z-index: 10; padding: var(--s3) var(--s5); background: var(--ink); color: var(--white); transform: translateY(-200%); }
+    .skip:focus { transform: none; }
+    .masthead { display: flex; align-items: center; justify-content: space-between; gap: var(--s6); padding-block: var(--s6); border-bottom: 1px solid var(--line); }
+    .brand { display: inline-flex; gap: var(--s3); align-items: center; text-decoration: none; font: var(--lead) var(--serif); }
+    .brand svg { width: var(--s8); height: var(--s8); color: var(--green); }
+    .nav-link { font-size: var(--small); padding-block: var(--s3); text-decoration: none; }
+    .nav-link:hover, .brand:hover { color: var(--green); text-decoration: underline; }
+    .hero { display: grid; grid-template-columns: 1.15fr 1fr; align-items: center; gap: var(--s10); padding-block: var(--s20) var(--s16); }
+    .eyebrow { display: flex; align-items: center; gap: var(--s3); font-size: var(--label); font-weight: 650; letter-spacing: .14em; text-transform: uppercase; }
+    .eyebrow::before { content: ''; width: var(--s6); height: 2px; background: var(--rust); flex: none; }
+    h1 { font-size: var(--display); line-height: 1.02; margin-block: var(--s6); }
+    h1 em { color: var(--green); font-weight: 400; }
+    .hero-description { max-width: 36ch; color: var(--muted); font-size: var(--lead); }
+    .text-link { display: inline-flex; align-items: center; gap: var(--s6); color: var(--green); font-size: var(--small); font-weight: 600; padding-block: var(--s3); text-decoration: none; }
+    .text-link svg { width: var(--s5); height: var(--s5); transition: transform var(--quick) var(--ease); }
+    .text-link:hover { text-decoration: underline; }
+    .text-link:hover svg { transform: translateX(var(--s1)); }
+    .text-link:active { opacity: .7; }
+    .hero .text-link { margin-top: var(--s6); }
+    .hero-art { position: relative; margin: 0; }
+    .hero-art > svg { width: 100%; height: auto; }
+    .hero-art figcaption { text-align: center; color: var(--muted); font: italic var(--small) var(--serif); margin-top: var(--s3); }
+    .collection { border-top: 1px solid var(--line); padding-top: var(--s10); padding-bottom: var(--s16); }
+    .collection-heading { display: flex; align-items: end; justify-content: space-between; flex-wrap: wrap; gap: var(--s6); margin-bottom: var(--s8); }
+    .collection-heading .eyebrow { color: var(--muted); margin-bottom: var(--s3); }
+    h2 { font-size: var(--heading); }
+    .search { position: relative; width: min(100%, 320px); }
+    .search label { display: block; margin-bottom: var(--s2); color: var(--muted); font-size: var(--small); }
+    .search-box { position: relative; }
+    .search svg { position: absolute; left: var(--s4); top: 50%; transform: translateY(-50%); width: var(--s5); height: var(--s5); color: var(--muted); pointer-events: none; }
+    .search input { width: 100%; min-height: 48px; padding: var(--s3) var(--s4) var(--s3) var(--s12); border: 1px solid var(--line); border-radius: var(--radius); background: var(--white); color: var(--ink); }
+    .search input::placeholder { color: var(--muted); opacity: 1; }
+    .search input:hover { border-color: var(--muted); }
+    .collection-meta { display: flex; justify-content: space-between; gap: var(--s4); margin-bottom: var(--s6); font-size: var(--small); color: var(--muted); }
+    .catalog { display: grid; gap: var(--s8); }
+    .book-card { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: var(--s12); align-items: center; border-top: 1px solid var(--line); padding-block: var(--s8); }
+    .cover-stage { display: grid; place-items: center; align-self: stretch; background: var(--sand); padding: var(--s8); border-radius: var(--radius); }
+    .book-cover { width: 160px; height: auto; box-shadow: var(--book-shadow); border-radius: 1px var(--radius) var(--radius) 1px; transition: transform var(--quick) var(--ease); }
+    .book-card:focus-within .book-cover { transform: translateY(calc(-1 * var(--s1))) rotate(-2deg); }
+    .book-details { max-width: 620px; }
+    .category { color: var(--rust); font-size: var(--label); font-weight: 650; letter-spacing: .14em; text-transform: uppercase; margin-bottom: var(--s3); }
+    h3 { font-size: var(--title); overflow-wrap: anywhere; }
+    h3 a { text-decoration: none; }
+    h3 a:hover { text-decoration: underline; }
+    .author { color: var(--muted); margin-top: var(--s2); font-size: var(--small); }
+    .book-description { max-width: 53ch; margin-block: var(--s5); }
+    .book-meta { color: var(--muted); font-size: var(--small); }
+    .book-details .text-link { margin-top: var(--s3); }
+    .empty { border-top: 1px solid var(--line); padding-block: var(--s12); }
+    .empty h3 { margin-bottom: var(--s3); }
+    .empty p { color: var(--muted); }
+    .clear-search { margin-top: var(--s5); min-height: 44px; padding: var(--s2) var(--s5); background: var(--ink); color: var(--white); border: 1px solid var(--ink); border-radius: var(--radius); }
+    .clear-search:hover { background: var(--green); }
+    .clear-search:active { opacity: .8; }
+    .shelf-note { display: flex; gap: var(--s4); align-items: baseline; border-top: 1px solid var(--line); padding-top: var(--s6); color: var(--muted); font-size: var(--small); }
+    .shelf-note strong { color: var(--ink); font-family: var(--serif); font-size: var(--lead); font-weight: 400; white-space: nowrap; }
+    footer { display: flex; justify-content: space-between; gap: var(--s6); flex-wrap: wrap; border-top: 1px solid var(--line); padding-block: var(--s6) var(--s8); color: var(--muted); font-size: var(--small); }
+    footer a { padding-block: var(--s3); }
+    @keyframes arrive { from { opacity: 0; transform: translateY(var(--s4)); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: no-preference) {
+      .hero-copy { animation: arrive var(--entrance) var(--ease) both; }
+      .hero-art { animation: arrive var(--entrance) var(--ease) 100ms both; }
+    }
+    @media (hover: hover) { .book-card:hover .book-cover { transform: translateY(calc(-1 * var(--s1))) rotate(-2deg); } }
+    @media (max-width: 760px) {
+      .hero { grid-template-columns: 1fr; padding-top: var(--s12); gap: var(--s8); }
+      .hero-art { width: min(100%, 420px); justify-self: center; }
+      .hero-description { max-width: 42ch; }
+      .book-card { grid-template-columns: 200px minmax(0, 1fr); gap: var(--s6); }
+      .cover-stage { padding: var(--s6); }
+      .shelf-note { flex-direction: column; gap: var(--s2); }
+    }
+    @media (max-width: 540px) {
+      .masthead { gap: var(--s3); }
+      .brand { font-size: var(--body); gap: var(--s2); }
+      .nav-link { font-size: var(--small); }
+      .hero { padding-bottom: var(--s12); }
+      .collection-heading { align-items: start; }
+      .search { width: 100%; }
+      .book-card { grid-template-columns: minmax(0, 1fr); }
+      .cover-stage { padding: var(--s8); }
+      .collection-meta { font-size: var(--small); }
+      .collection { padding-bottom: var(--s12); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .book-cover, .text-link svg { transition: none; }
+      .book-card:hover .book-cover, .book-card:focus-within .book-cover, .text-link:hover svg { transform: none; }
+    }
+  </style>
+</head>
+<body id="top">
+  <a class="skip" href="#collection">Skip to the collection</a>
+  <header class="masthead container">
+    <a class="brand" href="./index.html" aria-label="The Reading Room home">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M16 8C12 5 7 5 3 6v19c5-1 9 0 13 3 4-3 8-4 13-3V6c-4-1-9-1-13 2Zm0 0v20M7 10l5 1M7 14l5 1M20 11l5-1M20 15l5-1"/></svg>
+      The Reading Room
+    </a>
+    <nav aria-label="Main navigation"><a class="nav-link" href="#collection">The collection</a></nav>
+  </header>
+  <main>
+    <section class="hero container" aria-labelledby="welcome">
+      <div class="hero-copy">
+        <p class="eyebrow">A personal library of ideas</p>
+        <h1 id="welcome">Good books.<br><em>Lasting ideas.</em></h1>
+        <p class="hero-description">A little space for big perspectives. Visual book summaries to explore, sit with, and return to.</p>
+        <a class="text-link" href="#collection">Find your next perspective <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></a>
+      </div>
+      <figure class="hero-art">
+        <svg viewBox="0 0 480 400" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="arch-light" x2="0" y2="1"><stop stop-color="var(--sand)"/><stop offset="1" stop-color="var(--paper)"/></linearGradient>
+            <linearGradient id="cloth"><stop stop-color="var(--ink)"/><stop offset=".15" stop-color="var(--green)"/><stop offset=".85" stop-color="var(--green)"/><stop offset="1" stop-color="var(--ink)"/></linearGradient>
+            <linearGradient id="pages"><stop stop-color="var(--sand)"/><stop offset=".3" stop-color="var(--white)"/><stop offset="1" stop-color="var(--sand)"/></linearGradient>
+          </defs>
+          <path d="M63 326V183a177 177 0 0 1 354 0v143Z" fill="url(#arch-light)"/>
+          <circle cx="334" cy="113" r="43" fill="var(--coral)" opacity=".65"/>
+          <path d="M89 326V176a151 151 0 0 1 302 0v150" fill="none" stroke="var(--paper)" stroke-width="2"/>
+          <ellipse cx="247" cy="342" rx="188" ry="12" fill="var(--shadow)"/>
+          <g transform="translate(97 131) rotate(-9 30 191)">
+            <rect width="53" height="195" rx="4" fill="var(--coral)"/>
+            <path d="M7 0v195M44 0v195" stroke="var(--rust)" opacity=".3"/>
+            <path d="M12 20h29M12 25h29M12 167h29M12 172h29" stroke="var(--paper)"/>
+            <path d="M27 67v53m-7-9 7 9 7-9" fill="none" stroke="var(--ink)"/>
+          </g>
+          <g transform="translate(157 101)">
+            <rect width="66" height="225" rx="4" fill="url(#cloth)"/>
+            <path d="M8 8v209M56 8v209M16 23h34M16 201h34" stroke="var(--lime)" opacity=".5"/>
+            <ellipse cx="33" cy="105" rx="15" ry="23" fill="none" stroke="var(--lime)"/>
+            <path d="M33 91v28m-7-14h14" stroke="var(--lime)"/>
+          </g>
+          <g transform="translate(227 153)">
+            <rect width="37" height="173" rx="3" fill="var(--sage)"/>
+            <path d="M7 0v173M13 20h13M13 24h13M13 149h13" stroke="var(--ink)" opacity=".4"/>
+          </g>
+          <g transform="translate(273 296)">
+            <rect x="-5" width="113" height="30" rx="3" fill="var(--rust)"/>
+            <path d="M0 5h105v20H0c6-6 6-14 0-20Z" fill="url(#pages)"/>
+            <path d="M7 10h94M9 15h90M7 20h94" stroke="var(--sand)"/>
+            <rect x="-12" y="-23" width="113" height="24" rx="3" fill="var(--ink)"/>
+            <path d="M-7-19H97v16H-7c4-4 4-12 0-16Z" fill="url(#pages)"/>
+            <path d="M0-14h91M0-8h91" stroke="var(--sand)"/>
+            <path d="M72-19h9v35l-5-4-4 4Z" fill="var(--coral)"/>
+          </g>
+          <path d="M45 326h389v10H45Z" fill="var(--sage)"/>
+          <path d="M45 326h389" stroke="var(--white)" stroke-width="2"/>
+          <path d="M77 338v12M401 338v12" stroke="var(--ink)" stroke-width="3" opacity=".5"/>
+          <path d="m367 182 3 9 9 3-9 3-3 9-3-9-9-3 9-3Z" fill="var(--green)"/>
+          <circle cx="61" cy="104" r="3" fill="var(--rust)"/>
+        </svg>
+        <figcaption>Keep a little room for a new point of view.</figcaption>
+      </figure>
+    </section>
+    <section class="collection container" id="collection" aria-labelledby="collection-title">
+      <div class="collection-heading">
+        <div><p class="eyebrow">Notes from the bookshelf</p><h2 id="collection-title">The collection</h2></div>
+        <div class="search" id="search-controls" hidden>
+          <label for="book-search">Find a book or an idea</label>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+            <input id="book-search" type="search" placeholder="Title, author, or topic" aria-controls="catalog" autocomplete="off">
+          </div>
+        </div>
+      </div>
+      <div class="collection-meta"><p id="result-count" role="status" aria-live="polite" aria-atomic="true">1 book on the shelf</p><p>Read at your own pace</p></div>
+      <div class="catalog" id="catalog">
+        <article class="book-card" data-book data-topics="relationships connection conversation listening empathy psychology deep talk">
+          <div class="cover-stage" aria-hidden="true">
+            <svg class="book-cover" viewBox="0 0 180 250" aria-hidden="true" focusable="false">
+              <rect width="180" height="250" fill="var(--ink)"/>
+              <rect x="9" width="2" height="250" fill="var(--green)"/>
+              <path d="M18 18h145v214H18Z" fill="none" stroke="var(--lime)" stroke-opacity=".35"/>
+              <text x="90" y="41" text-anchor="middle" fill="var(--lime)" font-family="Georgia, serif" font-size="10" letter-spacing="2">DAVID BROOKS</text>
+              <g fill="var(--paper)" font-family="Georgia, serif" font-size="26" text-anchor="middle"><text x="90" y="82">How to Know</text><text x="90" y="110">a Person</text></g>
+              <path d="M29 214v-24c0-15 7-26 20-31-12-19-6-37 7-39 15-3 23 9 22 20l7 12-8 5v10l-10 3v8c11 7 18 19 18 36Z" fill="var(--coral)"/>
+              <path d="M151 214v-24c0-15-7-26-20-31 12-19 6-37-7-39-15-3-23 9-22 20l-7 12 8 5v10l10 3v8c-11 7-18 19-18 36Z" fill="var(--lime)"/>
+              <path d="M84 182q6-6 12 0M81 191q9-7 18 0" fill="none" stroke="var(--paper)" stroke-width="1.5"/>
+              <text x="90" y="234" text-anchor="middle" fill="var(--paper)" font-family="system-ui, sans-serif" font-size="6" letter-spacing="1.5">A VISUAL READING</text>
+            </svg>
+          </div>
+          <div class="book-details">
+            <p class="category">Human connection</p>
+            <h3><a href="./how%20to%20know%20a%20person-summary.html">How to Know a Person</a></h3>
+            <p class="author">David Brooks</p>
+            <p class="book-description">What makes a conversation deep? Explore the art of seeing others clearly, listening with care, and helping people feel understood.</p>
+            <p class="book-meta">Visual summary <span aria-hidden="true">&middot;</span> English + <span lang="ja">日本語</span></p>
+            <a class="text-link" href="./how%20to%20know%20a%20person-summary.html" aria-label="Read the summary of How to Know a Person">Read the summary <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></a>
+          </div>
+        </article>
+      </div>
+      <div class="empty" id="empty-state" hidden>
+        <h3>No books found. Keep exploring.</h3>
+        <p>Try a different title, author, or topic.</p>
+        <button class="clear-search" id="clear-search" type="button">Clear search</button>
+      </div>
+      <div class="shelf-note"><strong>A growing shelf.</strong><p>One book at a time. More perspectives to come.</p></div>
+    </section>
+  </main>
+  <footer class="container"><p>The Reading Room <span aria-hidden="true">/</span> Ideas worth keeping.</p><a href="#top">Back to top</a></footer>
+  <script>
+    (() => {
+      const search = document.getElementById('book-search');
+      const count = document.getElementById('result-count');
+      const empty = document.getElementById('empty-state');
+      const normalize = (text) => text.normalize('NFKC').toLocaleLowerCase().trim();
+      const books = Array.from(document.querySelectorAll('[data-book]'), (card) => ({
+        card,
+        text: normalize(`${card.querySelector('.book-details').textContent} ${card.dataset.topics || ''}`)
+      }));
+      const filterBooks = () => {
+        const terms = normalize(search.value).split(/\s+/).filter(Boolean);
+        let visible = 0;
+        for (const book of books) {
+          book.card.hidden = !terms.every((term) => book.text.includes(term));
+          if (!book.card.hidden) visible += 1;
+        }
+        count.textContent = terms.length
+          ? `${visible} of ${books.length} ${books.length === 1 ? 'book' : 'books'} found`
+          : `${books.length} ${books.length === 1 ? 'book' : 'books'} on the shelf`;
+        empty.hidden = visible !== 0;
+      };
+      search.addEventListener('input', filterBooks);
+      document.getElementById('clear-search').addEventListener('click', () => {
+        search.value = '';
+        filterBooks();
+        search.focus();
+      });
+      filterBooks();
+      document.getElementById('search-controls').hidden = false;
+    })();
+  </script>
+</body>
+</html>
