@@ -1,5 +1,7 @@
 # The Reading Room
 
+## https://hennessyng.github.io/book-summary/
+
 A small static library of visual book summaries. Open `index.html` in a browser,
 or serve this directory locally:
 
